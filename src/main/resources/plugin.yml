@@ -1,0 +1,14 @@
+name: MinecraftX
+version: '1.0-SNAPSHOT'
+main: paper.plugin.minecraftX.MinecraftX
+api-version: '1.21'
+commands:
+  script:
+    description: 运行或列出 MinecraftX Lua 脚本
+    usage: /<command> run <name> | /<command> list
+  modlist:
+    description: 查看模块列表
+    usage: /<command> [filter <status|author> [args...]] | /<command> info <name|pack>
+  modmanager:
+    description: 管理模块启用禁用
+    usage: /<command> <disabled|enabled> <name|pack>

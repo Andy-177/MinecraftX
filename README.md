@@ -147,6 +147,3 @@ end
 - Paper API 1.21.8-R0.1-SNAPSHOT
 - Kotlin JDK 8 标准库 2.4.0
 - LuaJ 3.0.2
-
-## 许可证
-MIT License

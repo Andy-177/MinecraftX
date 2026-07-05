@@ -5,6 +5,7 @@ import org.luaj.vm2.*
 import org.luaj.vm2.lib.*
 import org.luaj.vm2.lib.jse.*
 import org.yaml.snakeyaml.Yaml
+import paper.plugin.minecraftX.bridge.JavaBridge
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -512,6 +513,7 @@ class ModuleLoader(
             }
         })
 
+        JavaBridge(plugin).registerAll(globals)
         registerModuleHelpers(globals, module)
         registerModuleConfigHelpers(globals, module, configManager)
         registerExportImport(globals, module)

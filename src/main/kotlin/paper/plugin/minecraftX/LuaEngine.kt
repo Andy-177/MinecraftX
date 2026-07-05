@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.luaj.vm2.*
 import org.luaj.vm2.lib.*
 import org.luaj.vm2.lib.jse.*
+import paper.plugin.minecraftX.bridge.JavaBridge
 import java.io.File
 import java.time.Duration
 
@@ -43,6 +44,8 @@ class LuaEngine(private val plugin: JavaPlugin, private val configManager: Scrip
         registerTaskHelpers()
         registerInitConfigHelper()
         registerAdventureHelpers()
+
+        JavaBridge(plugin).registerAll(globals)
     }
 
     fun runScript(file: File): Any? {

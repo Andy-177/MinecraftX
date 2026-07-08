@@ -1,0 +1,11 @@
+name: Lugin
+version: '1.0-SNAPSHOT'
+main: paper.plugin.lugin.Lugin
+api-version: '1.21'
+commands:
+  script:
+    description: 运行或列出 Lugin Lua 脚本
+    usage: /<command> run <name> | /<command> list
+  mpm:
+    description: 模块包管理
+    usage: /<command> <install|remove|uninstall|unpack|pack|packs|list|enabled|disabled> [args...]

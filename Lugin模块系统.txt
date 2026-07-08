@@ -1,0 +1,181 @@
+让Lugin支持模块系统
+——————————————————————————————————————————————————————————————————————
+模块的文件夹结构：
+E:\Minecraft\MCserver\leaves-1.21.8-test\Lugin\module>tree /f
+卷 存储 的文件夹 PATH 列表
+卷序列号为 24D2-4EE3
+E:.
+└─example
+    │  manifest.yml <- 模块的描述文件
+    │
+    ├─resources
+    │      config.yml <- 模块的默认配置文件（可选，但即使没有配置依然要resources文件夹），配置会被存储在Lugin/config/模块的name字段 文件夹里，如果没有配置则不会创建文件夹
+    │
+    └─scripts
+            main.lua <- 主程序，脚本入口，相当于paper或java开发中的主类
+———————————————————————————————————————————————————————————————————————
+描述文件格式示例：
+name: "example" # 模块名必写，最好和模块的文件夹同名
+version: "1.0-test" # 版本号必须写
+main: "main.lua" # 主程序，入口，必须
+description: An example Lugin module # 模块描述，非强制
+author: example # 作者名，必须
+
+depends:
+  required:
+    - example@testlib:1.0 # required里面的依赖都是强制依赖，如果缺失会爆出缺失依赖模块，然后这个模块就不会被加载
+    - example@xlib:3.0: 这是有关依赖的介绍，可选，可以说明这个依赖有什么用，为什么需要。可选依赖、硬性冲突、不兼容都可以加入说明
+  optional:
+    - mcdev@lalib:2.0-release # optional里面的依赖是可选依赖，如果缺失会有黄色警告，但不会关闭服务器
+
+conflicts:
+  break:
+    - xad@loak3x:26.1.1 # 硬性冲突，直接爆冲突，会在控制台打印日志，然后取消加载矛盾模块，如果矛盾模块还有其他的依赖，这些依赖也会被一起取消加载
+  incompatible:
+    - xad@mm3n:26.1.1 # 不兼容，可能会发生未知bug，黄色警告
+    - ddc@cnxd:223.1.2: |
+        可以使用多行
+        就像这样
+
+provides:
+  - xad@mm3n:3.1.1 # 与其重复或内置该依赖
+
+expose: false # 决定是否要暴露内部函数，可选，没有这个字段默认是关闭的，expose: false也是关闭，expose: true才是允许暴露
+
+# depends、conflicts、provides都不是必须填写的，按需选择
+
+# 向xxx@xxxxxx:x.x.x这种就是包名，包名自动生成，包名的格式是用户名@模块名:版本号，即author@name:version
+
+# 主程序入口是以模块目录下的scripts为根目录，如果在Lugin/module/example/scripts/xac/main.lua，那么main字段就应该是main: "xac/main.lua"
+———————————————————————————————————————————————————————————————————————
+主程序：
+和paper开发一样，main.lua也有onEnable和onDisable函数，其作用和paper插件中的作用类似，只不过是在Lugin模块中
+例如：
+function onEnable()
+  --中间是你要执行的代码
+end
+function onDisable()
+  --中间是你要执行的代码
+end
+———————————————————————————————————————————————————————————————————————
+导入和导出：
+在manifest.yml里，有expose关键字，如果模块要对外保留函数，在配置中声明expose: true即可表明自己要暴露函数
+在lua里，使用export()函数可以选择哪些函数会被暴露，而使用import("包名")即可导入对应模块暴露的函数
+例如使用import("xdc@accd:1.0")就会导入开发者（author）为xdc，插件名（name）为accd，版本号（version）为1.0的模块所暴露的函数
+———————————————————————————————————————————————————————————————————————
+配置管理器（ConfigManager）：
+脚本有脚本配置管理器（ScriptConfigManager），模块有配置管理器（ConfigManager），脚本肯定是不能使用ConfigManager的，只能使用更轻量的ScriptConfigManager
+和脚本配置管理不同，模块的配置初始化会直接在config文件夹创建“模块名（name字段）”文件夹，然后模块里resources的全部文件都会被复制到模块自身的配置文件夹中
+当然，除开初始化外和配置路径不一样外，ConfigManager和ScriptConfigManager对配置的写入读取操作都差不多
+———————————————————————————————————————————————————————————————————————
+模块管理：
+在Lugin/module目录下有disabled.txt，这个是禁用的模块名单，如果一个模块的包名在里面则这个模块在启动时不会被加载
+《disabled.txt》
+xdc@sdff:3289
+在这个例子里，由xdc开发的sdff插件的3289版本被禁用了
+———————————————————————————————————————————————————————————————————————
+模块冲突解决：
+Lugin不允许两个插件的不同版本同时存在，如果插件的作者和名字都一样，但版本号不同，Lugin会直接报错说“同一插件不同版本同时存在，拒绝启动服务器，请删除其中一个版本，然后重启服务器”，然后打印两个插件的包名，比如
+xdc@sdff:3289
+xdc@sdff:3286
+这两个插件是同一作者，名字也一样，说明是同一插件，直接报错并拒绝启动服务器：
+
+同一插件不同版本同时存在，拒绝启动服务器，请删除其中一个版本，然后重启服务器
+重名的插件：
+  └─xdc@sdff:3289
+  └─xdc@sdff:3286
+———————————————————————————————————————————————————————————————————————
+强制依赖问题输出格式规范：
+假设依赖配置如下：
+depends:
+  required:
+    - example@testlib:1.0 # required里面的依赖都是强制依赖，如果缺失会爆出缺失依赖模块，然后这个模块就不会被加载
+    - example@xlib:3.0: 这是有关依赖的介绍，可选，可以说明这个依赖有什么用，为什么需要。可选依赖、硬性冲突、不兼容都可以加入说明
+缺失的模块是example@testlib:1.0则会打印红色日志，然后不加载这个插件：
+打印日志：
+example@example:1.0-test缺失依赖：
+  └─example@testlib:1.0
+
+缺失的模块是example@xlib:3.0则会打印红色日志，然后不加载这个插件：
+打印日志：
+example@example:1.0-test缺失依赖：
+  └─example@xlib:3.0 : 这是有关依赖的介绍，可选，可以说明这个依赖有什么用，为什么需要。可选依赖、硬性冲突、不兼容都可以加入说明
+-----
+假设依赖配置如下：
+depends:
+  required:
+    - example@testlib:1.0 # required里面的依赖都是强制依赖，如果缺失会爆出缺失依赖模块，然后这个模块就不会被加载
+    - example@xlib:3.0: |
+      这是插件的介绍
+      可选
+        测试文本
+缺失的模块是example@xlib:3.0则会打印红色日志，然后不加载这个插件：
+打印日志：
+example@example:1.0-test缺失依赖：
+  └─example@xlib:3.0 : 
+        这是有关依赖的介绍
+        可选
+          测试文本
+———————————————————————————————————————————————————————————————————————
+可选依赖问题输出格式规范：
+假设依赖配置如下：
+depends:
+  optional:
+    - mcdev@lalib:2.0-release # optional里面的依赖是可选依赖，如果缺失会有黄色警告，但不会关闭服务器
+缺失的模块是mcdev@lalib:2.0-release则会打印黄色日志，然后正常加载这个插件：
+打印日志：
+example@example:1.0-test缺失可选依赖（可能会导致部分功能缺失）：
+  └─mcdev@lalib:2.0-release
+———————————————————————————————————————————————————————————————————————
+冲突问题输出格式规范：
+强制冲突break和强制依赖的处理逻辑类似，也是红色警告
+不兼容和可选依赖类似，黄色警告
+———————————————————————————————————————————————————————————————————————
+指令：
+/modlist 发送模块列表，启用的为绿色并且后面标注(Enabled)，未启用的为红色并且后面标注(Disabled)，如果遇到重名模块比如两个name字段一样的直接使用包名代替name，比如adx@dcca:1.0和vdx@dcca:1.2
+/modlist filter status <enabled | disable> 展示所有启用或禁用的插件，模块重名处理逻辑一样
+/modlist filter author <devlopername> 展示同一模块作者的所有模块，启用的为绿色并且后面标注(Enabled)，未启用的为红色并且后面标注(Disabled)，模块重名处理逻辑一样
+/modlist info <modulename | packname> 打印完整的模块信息，示例如下
+示例：
+/modlist info example
+example@example:1.0-test
+  └─name: example
+  └─version: 1.0-test
+  └─main: main.lua
+  └─description: An example Lugin module
+  └─author: example
+
+/modlist info example@example:1.0-test
+example@example:1.0-test
+  └─name: example
+  └─version: 1.0-test
+  └─main: main.lua
+  └─description: An example Lugin module
+  └─author: example
+
+/modlist info xcc #xcc的description是多行的
+example@xcc:1.0-test
+  └─name: xcc
+  └─version: 1.0-test
+  └─main: main.lua
+  └─description: 
+        xcc mod
+        this is xcc
+  └─author: example
+
+/modmanager disabled <modulename | packname>将对应模块包名写入disabled.txt
+/modmanager enabled <modulename | packname>将对应模块包名从disabled.txt移除，如果不在disabled.txt则什么也不做
+———————————————————————————————————————————————————————————————————————
+onEnabled和onDisabled函数：
+在lua模块主程序里，onEnabled里的代码在模块成功加载后执行，onDisabled里的代码在服务器关闭时执行
+———————————————————————————————————————————————————————————————————————
+依赖循环：
+检测到强制依赖项发生依赖循环后直接拒绝启动服务器，并使用红色打印依赖循环链
+打印示例：
+检测到依赖循环，服务器拒绝启动
+依赖循环链：
+xsd@adcca:1.0.9 -> sdc@adcds:9.0 -> xsd@adcca:1.0.9
+———————————————————————————————————————————————————————————————————————
+模块隔离：
+模块之间是无法相互调用对方的，因为模块和模块之间是隔离开来的，必须使用expose: true和使用export()导出要暴露的函数，而其他模块使用import()导入的也只会是暴露的函数
+但是在模块内部，不同lua之间无需像模块这样暴露，只使用lua内部的规则，就能实现同模块内不同lua的相互调用，无需使用模块与模块间复杂的暴露方法

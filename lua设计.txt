@@ -1,0 +1,11 @@
+先让MinecraftX插件能在服务器根目录创建MinecraftX文件夹，再在里面创建script，module，config
+
+logger.info("MinecraftX初始化完成")
+
+添加LuaJ库
+
+让lua支持所有的paper api，使用luaJ实现让lua支持完整paper api，小到基础事件监听、发送消息，大到整个Bukkit api+Paper api
+
+使用/script run <scriptname> 运行脚本，使用/script list 展示所有脚本
+
+允许脚本使用脚本配置管理器ScriptConfigManager创建一个属于自己的配置文件夹，配置文件夹的名字是脚本的名字，然后脚本可以使用paper自带的yml解析器，并且可以使用脚本配置管理器去初始化配置等等

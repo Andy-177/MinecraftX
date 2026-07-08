@@ -8,4 +8,4 @@ commands:
     usage: /<command> run <name> | /<command> list
   mpm:
     description: 模块包管理
-    usage: /<command> <install|remove|uninstall|unpack|pack|packs|list|enabled|disabled> [args...]
+    usage: /<command> <install|remove|uninstall|archive|pack|packs|list|enabled|disabled> [args...]

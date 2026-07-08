@@ -78,7 +78,7 @@ class ModulePackager(
         return messages
     }
 
-    fun unpack(zipName: String, moduleNames: List<String>): List<String> {
+    fun archive(zipName: String, moduleNames: List<String>): List<String> {
         val messages = mutableListOf<String>()
         val dirs = mutableListOf<Pair<File, String>>()
         for (name in moduleNames) {

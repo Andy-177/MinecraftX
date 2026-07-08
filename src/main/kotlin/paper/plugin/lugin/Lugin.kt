@@ -104,7 +104,7 @@ class Lugin : JavaPlugin() {
 
     private fun handleMpmCommand(sender: CommandSender, args: Array<String>): Boolean {
         if (args.isEmpty()) {
-            sender.sendMessage("§c用法: /mpm <install|remove|uninstall|unpack|pack|packs|list|enabled|disabled> [args...]")
+            sender.sendMessage("§c用法: /mpm <install|remove|uninstall|archive|pack|packs|list|enabled|disabled> [args...]")
             return true
         }
 
@@ -133,14 +133,14 @@ class Lugin : JavaPlugin() {
                 val responses = modulePackager.uninstall(args.drop(1))
                 responses.forEach { sender.sendMessage(it) }
             }
-            "unpack" -> {
+            "archive" -> {
                 if (args.size < 3) {
-                    sender.sendMessage("§c用法: /mpm unpack <zip名称> <模块名|包名> [模块名2...]")
+                    sender.sendMessage("§c用法: /mpm archive <zip名称> <模块名|包名> [模块名2...]")
                     return true
                 }
                 val zipName = args[1]
                 val moduleNames = args.drop(2)
-                val responses = modulePackager.unpack(zipName, moduleNames)
+                val responses = modulePackager.archive(zipName, moduleNames)
                 responses.forEach { sender.sendMessage(it) }
             }
             "pack" -> {
@@ -238,7 +238,7 @@ class Lugin : JavaPlugin() {
                     sender.sendMessage("§c未找到模块: ${args[1]}")
                 }
             }
-            else -> sender.sendMessage("§c用法: /mpm <install|remove|uninstall|unpack|pack|packs|list|enabled|disabled> [args...]")
+            else -> sender.sendMessage("§c用法: /mpm <install|remove|uninstall|archive|pack|packs|list|enabled|disabled> [args...]")
         }
         return true
     }
@@ -267,7 +267,7 @@ class Lugin : JavaPlugin() {
     }
 
     private fun tabCompleteMpm(args: Array<String>): MutableList<String> {
-        val subcommands = listOf("install", "remove", "uninstall", "unpack", "pack", "packs", "list", "disabled", "enabled")
+        val subcommands = listOf("install", "remove", "uninstall", "archive", "pack", "packs", "list", "disabled", "enabled")
         return when (args.size) {
             1 -> subcommands.toMutableList()
             2 -> {
@@ -275,7 +275,7 @@ class Lugin : JavaPlugin() {
                     "install" -> mutableListOf()
                     "list" -> mutableListOf("filter", "info")
                     "remove", "uninstall", "pack", "disabled", "enabled" -> getModuleSuggestions()
-                    "unpack", "packs" -> mutableListOf()
+                    "archive", "packs" -> mutableListOf()
                     else -> mutableListOf()
                 }
             }
@@ -289,7 +289,7 @@ class Lugin : JavaPlugin() {
                         }
                     }
                     "remove", "uninstall", "pack", "disabled", "enabled" -> getModuleSuggestions()
-                    "unpack", "packs" -> getModuleSuggestions()
+                    "archive", "packs" -> getModuleSuggestions()
                     else -> mutableListOf()
                 }
             }

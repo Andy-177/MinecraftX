@@ -24,6 +24,9 @@ class ConfigManager(private val plugin: JavaPlugin) {
     }
 
     fun copyResources(module: ModuleInfo) {
+        if (!module.resourcesDir.exists()) return
+        val files = module.resourcesDir.listFiles()
+        if (files == null || files.isEmpty()) return
         val targetDir = getConfigDir(module.manifest.name)
         targetDir.mkdirs()
         copyDirectory(module.resourcesDir, targetDir)
